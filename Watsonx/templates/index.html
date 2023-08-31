@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watsonx.AI Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            /*background-color: #110b25; */
+            /* Set the background image */
+            background-image: url("{{ url_for('static', filename='watsonx.jpg') }}");
+            /* Ensure the background image covers the whole body */
+            background-size: cover;
+            background-position: center;
+        }
+
+        .chat-container {
+            max-width: 600px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .chat-box {
+            overflow-y: scroll;
+            max-height: 300px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .user-message {
+            text-align: right;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 10px;
+            padding: 8px;
+            margin-bottom: 5px;
+        }
+
+        .ai-message {
+            text-align: left;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            padding: 8px;
+            margin-bottom: 5px;
+        }
+
+        .input-box {
+            display: flex;
+        }
+
+        .input-box input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+        }
+
+        .input-box button {
+            padding: 8px;
+            background-color: #007bff;
+            border: 1px solid #007bff;
+            border-radius: 0 5px 5px 0;
+            color: #fff;
+            cursor: pointer;
+        }
+        .sidebar {
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar h4 {
+            margin: 0;
+            margin-right: 10px;
+            white-space: nowrap; /* Prevent header from wrapping */
+        }
+
+        .sidebar select {
+            flex: 1; /* Expand the dropdown to take available space */
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Add the image in the left top half -->
+        <!--img src="{{ url_for('static', filename='ibm_logo.jpg') }}" 
+             alt="Your Alt Text" 
+             style="position: absolute; top: 0; left: 0; width: 25%; height: 28%; z-index: -1; opacity: 0.3;" -->
+        <div class="chat-box" id="chatBox">
+            <!-- Chat messages will be displayed here -->
+            <div class="ai-message">Hello! I am Watsonx.AI. How can I assist you today?</div>
+            <!-- Sidebar with dropdown list -->
+            <div class="sidebar">
+                <h4>Model to Use:</h4>
+                <!-- select id="dropdown" -->
+                <select id="dropdown" onchange="sendDropdownValue()">
+                    <option value="flan_ul2">watsonx-Model-1</option>
+                    <option value="gpt_neoxt_chat_base_20b">watsonx-Model-2</option>
+                    <option value="chat_gpt">chatgpt-Model</option>
+                    <option value="option3">Option 3</option>
+                </select>
+                <!--button onclick="sendDropdownValue()">Send</button -->
+            </div>
+        </div>
+        <div class="input-box">
+            <input type="text" id="userInput" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function appendUserMessage(message) {
+            const chatBox = document.getElementById("chatBox");
+            const userMessage = document.createElement("div");
+            userMessage.className = "user-message";
+            userMessage.textContent = message;
+            chatBox.appendChild(userMessage);
+        }
+
+        function appendAiMessage(message) {
+            const chatBox = document.getElementById("chatBox");
+            const aiMessage = document.createElement("div");
+            aiMessage.className = "ai-message";
+            aiMessage.textContent = message;
+            chatBox.appendChild(aiMessage);
+        }
+
+        function sendMessage() {
+            const userInput = document.getElementById("userInput").value;
+            if (userInput.trim() === "") return;
+
+            // Display user message
+            appendUserMessage(userInput);
+
+            // Clear the input field after sending the message
+            document.getElementById("userInput").value = "";
+
+            // Send the user input to the backend server (Flask) using fetch
+            fetch('/get_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'user_input=' + encodeURIComponent(userInput)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const aiResponse = data.response;
+                appendAiMessage(aiResponse);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        function sendDropdownValue() {
+            const selectedOption = document.getElementById("dropdown").value;
+
+            // Send the selected option to the backend server (Flask) using fetch
+            fetch('/get_dropdown_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'selected_option=' + encodeURIComponent(selectedOption)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const aiResponse = data.response;
+                appendAiMessage(aiResponse);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

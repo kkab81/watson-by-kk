@@ -1,0 +1,122 @@
+import os
+from flask import Flask, render_template, request, jsonify
+
+app = Flask(__name__)
+
+# Get the path to the project folder
+project_folder = os.path.abspath(os.path.dirname(__file__))
+
+# Set the path to your configuration files
+api_key_file = os.path.join(project_folder, "config", "api_key.txt")
+api_url_file = os.path.join(project_folder, "config", "api_url.txt")
+
+# Read the API key and API URL from the configuration files
+with open(api_key_file, "r") as f:
+    api_key = f.read().strip()
+
+with open(api_url_file, "r") as f:
+    api_url = f.read().strip()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/get_response', methods=['POST'])
+def get_response():
+    user_input = request.form.get('user_input')
+
+    # Process the user input and generate the AI response
+    # Replace this with your actual AI response generation logic
+    ai_response = "I understand you said: " + user_input
+
+    return jsonify({'response': ai_response})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+---------------------------------------------------------------------------
+side bar code
+sidebar
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- ... Your existing head content ... -->
+</head>
+<body>
+    <div class="chat-container">
+        <!-- ... Your existing chat container content ... -->
+
+        <!-- Sidebar with dropdown list -->
+        <div class="sidebar">
+            <h3>Select an option:</h3>
+            <select id="dropdown">
+                <option value="option1">Option 1</option>
+                <option value="option2">Option 2</option>
+                <option value="option3">Option 3</option>
+            </select>
+            <button onclick="sendDropdownValue()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // ... Your existing script content ...
+
+        function sendDropdownValue() {
+            const selectedOption = document.getElementById("dropdown").value;
+
+            // Send the selected option to the backend server (Flask) using fetch
+            fetch('/get_dropdown_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'selected_option=' + encodeURIComponent(selectedOption)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const aiResponse = data.response;
+                appendAiMessage(aiResponse);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+from flask import Flask, render_template, request, jsonify
+
+app = Flask(__name__)
+
+# ... Your existing Flask routes ...
+
+@app.route('/get_dropdown_response', methods=['POST'])
+def get_dropdown_response():
+    selected_option = request.form.get('selected_option')
+
+    # Process the selected option and generate the AI response
+    # Replace this with your actual AI response generation logic based on the selected option
+    ai_response = "You selected: " + selected_option
+
+    return jsonify({'response': ai_response})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+****************************************************************
+dropdown without send button
+<!-- Sidebar with dropdown list -->
+            <div class="sidebar">
+                <h4>Model to Use:</h4>
+                <select id="dropdown" onchange="sendDropdownValue()">
+                    <option value="option1">Option 1</option>
+                    <option value="option2">Option 2</option>
+                    <option value="option3">Option 3</option>
+                </select>
+            </div>
+        </div>
+        
